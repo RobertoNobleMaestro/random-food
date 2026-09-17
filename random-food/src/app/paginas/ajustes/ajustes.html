@@ -1,0 +1,207 @@
+<div class="contenedor estrecho pila">
+  <h1>Ajustes</h1>
+
+  @if (error()) {
+    <p class="aviso aviso-error" role="alert">{{ error() }}</p>
+  }
+
+  <!-- Hogar ------------------------------------------------------------- -->
+  <section class="tarjeta seccion">
+    <h2>Hogar</h2>
+
+    @if (editandoNombre()) {
+      <form class="fila" (ngSubmit)="renombrar()">
+        <input
+          class="entrada crecer"
+          type="text"
+          maxlength="80"
+          aria-label="Nombre del hogar"
+          [ngModel]="nombreHogar()"
+          (ngModelChange)="nombreHogar.set($event)"
+          name="nombreHogar"
+        />
+        <button type="submit" class="btn btn-principal btn-sm">Guardar</button>
+        <button type="button" class="btn btn-sm" (click)="editandoNombre.set(false)">
+          Cancelar
+        </button>
+      </form>
+    } @else {
+      <div class="fila-entre">
+        <strong>{{ hogares.hogar()?.nombre }}</strong>
+        <button type="button" class="btn btn-sm" (click)="empezarRenombrar()">Renombrar</button>
+      </div>
+    }
+
+    <div class="invitacion">
+      <div>
+        <p class="pequeno suave">Código de invitación</p>
+        <p class="mono codigo">{{ codigo() }}</p>
+      </div>
+      <div class="fila">
+        <button type="button" class="btn btn-sm" (click)="copiarCodigo()">
+          {{ copiado() ? '✓ Copiado' : 'Copiar' }}
+        </button>
+        <button type="button" class="btn btn-sm" [disabled]="rotando()" (click)="rotarCodigo()">
+          {{ rotando() ? '…' : 'Cambiar' }}
+        </button>
+      </div>
+    </div>
+    <p class="diminuto tenue">
+      Quien tenga este código puede entrar en vuestro hogar y ver el mismo calendario. Si se te ha
+      escapado a quien no debía, cámbialo: el anterior deja de valer.
+    </p>
+  </section>
+
+  <!-- Categorías -------------------------------------------------------- -->
+  <section class="tarjeta seccion">
+    <div class="fila-entre">
+      <h2>Categorías</h2>
+      <button type="button" class="btn btn-sm" (click)="nuevaCategoria()">+ Añadir</button>
+    </div>
+    <p class="diminuto tenue">
+      El generador las usa para no encadenar dos comidas del mismo tipo.
+    </p>
+
+    @if (!hogares.categorias().length) {
+      <p class="pequeno suave">Todavía no hay categorías.</p>
+    } @else {
+      <ul class="lista-categorias">
+        @for (categoria of hogares.categorias(); track categoria.id) {
+          <li>
+            <button type="button" class="fila-categoria" (click)="editarCategoria(categoria)">
+              <span class="punto" [style.background]="categoria.color"></span>
+              <span class="icono">{{ categoria.icono }}</span>
+              <span class="crecer truncar">{{ categoria.nombre }}</span>
+              <span class="diminuto tenue">
+                {{ usoPorCategoria().get(categoria.id) ?? 0 }}
+              </span>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <!-- Apariencia -------------------------------------------------------- -->
+  <section class="tarjeta seccion">
+    <h2>Apariencia</h2>
+    <div class="temas">
+      @for (opcion of temasDisponibles; track opcion.valor) {
+        <button
+          type="button"
+          class="btn btn-sm"
+          [class.activo]="temas.tema() === opcion.valor"
+          (click)="temas.poner(opcion.valor)"
+          [attr.aria-pressed]="temas.tema() === opcion.valor"
+        >
+          {{ opcion.etiqueta }}
+        </button>
+      }
+    </div>
+  </section>
+
+  <!-- Cuenta ------------------------------------------------------------ -->
+  <section class="tarjeta seccion">
+    <h2>Cuenta</h2>
+    <p class="pequeno suave">{{ correo() }}</p>
+
+    <div class="pila-sm">
+      <button type="button" class="btn" (click)="cerrarSesion()">Cerrar sesión</button>
+      <button type="button" class="btn btn-peligro" (click)="salirDelHogar()">
+        Salir de este hogar
+      </button>
+    </div>
+  </section>
+</div>
+
+@if (categoriaEditando(); as destino) {
+  <div class="velo" (click)="cerrarCategoria()">
+    <div
+      class="hoja"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="titulo-categoria"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="fila-entre hoja-cabecera">
+        <h2 id="titulo-categoria">
+          {{ destino === 'nueva' ? 'Nueva categoría' : 'Editar categoría' }}
+        </h2>
+        <button type="button" class="btn-icono" (click)="cerrarCategoria()" aria-label="Cerrar">
+          ✕
+        </button>
+      </header>
+
+      <form class="pila hoja-cuerpo" (ngSubmit)="guardarCategoria()">
+        <div class="campo">
+          <label for="nombre-categoria">Nombre</label>
+          <input
+            id="nombre-categoria"
+            name="nombreCategoria"
+            class="entrada"
+            type="text"
+            placeholder="Legumbre"
+            maxlength="40"
+            required
+            [ngModel]="nombreCategoria()"
+            (ngModelChange)="nombreCategoria.set($event)"
+          />
+        </div>
+
+        <div class="campo">
+          <label for="icono-categoria">Icono</label>
+          <input
+            id="icono-categoria"
+            name="iconoCategoria"
+            class="entrada entrada-icono"
+            type="text"
+            placeholder="🫘"
+            maxlength="8"
+            [ngModel]="iconoCategoria()"
+            (ngModelChange)="iconoCategoria.set($event)"
+          />
+          <p class="diminuto tenue">Un emoji cualquiera. Se puede dejar vacío.</p>
+        </div>
+
+        <fieldset class="campo sin-borde">
+          <legend>Color</legend>
+          <div class="paleta">
+            @for (color of colores; track color) {
+              <button
+                type="button"
+                class="muestra"
+                [class.elegida]="colorCategoria() === color"
+                [style.background]="color"
+                (click)="colorCategoria.set(color)"
+                [attr.aria-label]="'Color ' + color"
+                [attr.aria-pressed]="colorCategoria() === color"
+              ></button>
+            }
+          </div>
+        </fieldset>
+
+        <div class="hoja-pie">
+          @if (destino !== 'nueva') {
+            <button
+              type="button"
+              class="btn btn-peligro"
+              [disabled]="guardandoCategoria()"
+              (click)="borrarCategoria(destino)"
+            >
+              Borrar
+            </button>
+          }
+          <span class="crecer"></span>
+          <button type="button" class="btn" (click)="cerrarCategoria()">Cancelar</button>
+          <button
+            type="submit"
+            class="btn btn-principal"
+            [disabled]="!nombreCategoriaValido() || guardandoCategoria()"
+          >
+            {{ guardandoCategoria() ? 'Guardando…' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

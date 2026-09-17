@@ -1,0 +1,217 @@
+/* --------------------------------------------------------------------------
+   Filtros
+   -------------------------------------------------------------------------- */
+
+.filtros {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.interruptores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+@media (width >= 40rem) {
+  .filtros {
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+  }
+
+  .filtros .select {
+    width: auto;
+    min-width: 12rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Lista
+   -------------------------------------------------------------------------- */
+
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.plato {
+  display: flex;
+  align-items: stretch;
+  gap: 0.25rem;
+  padding-right: 0.5rem;
+  transition: border-color 0.15s;
+}
+
+.plato:hover {
+  border-color: var(--borde-fuerte);
+}
+
+.plato.archivado {
+  opacity: 0.65;
+}
+
+.cuerpo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.8rem 0.25rem 0.8rem 0.9rem;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radio);
+}
+
+.linea-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.linea-titulo strong {
+  font-weight: 600;
+}
+
+.linea-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.5rem;
+  min-width: 0;
+}
+
+/* Separadores entre los datos secundarios. */
+.linea-meta span + span::before {
+  content: '·';
+  margin-right: 0.5rem;
+}
+
+.acciones {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  flex-shrink: 0;
+}
+
+.acciones a.btn-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border-radius: var(--radio-sm);
+}
+
+.favorito {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.favorito.marcado {
+  color: #f59e0b;
+}
+
+/* --------------------------------------------------------------------------
+   Hoja de edición
+   -------------------------------------------------------------------------- */
+
+.velo {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgb(20 16 12 / 45%);
+  backdrop-filter: blur(2px);
+  animation: aparecer 0.15s ease-out;
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+  }
+}
+
+.hoja {
+  width: 100%;
+  max-width: 34rem;
+  max-height: 92dvh;
+  overflow-y: auto;
+  background: var(--fondo);
+  border: 1px solid var(--borde);
+  border-bottom: 0;
+  border-radius: var(--radio-lg) var(--radio-lg) 0 0;
+  box-shadow: var(--sombra-alta);
+  padding-bottom: env(safe-area-inset-bottom);
+  animation: subir 0.2s ease-out;
+}
+
+@keyframes subir {
+  from {
+    transform: translateY(2rem);
+  }
+}
+
+.hoja-cabecera {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 1rem 1rem 0.75rem 1.25rem;
+  background: var(--fondo);
+  border-bottom: 1px solid var(--borde);
+}
+
+.hoja-cuerpo {
+  padding: 1.25rem;
+}
+
+.dos-columnas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+fieldset.sin-borde {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+fieldset.sin-borde legend {
+  padding: 0;
+  font-size: 0.85rem;
+  font-weight: 550;
+  color: var(--texto-suave);
+  margin-bottom: 0.15rem;
+}
+
+.hoja-pie {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 0.25rem;
+}
+
+.nota-archivar {
+  padding: 0 1.25rem 1.25rem;
+  margin-top: -0.5rem;
+}
+
+@media (width >= 40rem) {
+  .velo {
+    align-items: center;
+    padding: 1.5rem;
+  }
+
+  .hoja {
+    border-radius: var(--radio-lg);
+    border-bottom: 1px solid var(--borde);
+  }
+}

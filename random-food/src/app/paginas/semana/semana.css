@@ -1,0 +1,333 @@
+/* --------------------------------------------------------------------------
+   Cabecera
+   -------------------------------------------------------------------------- */
+
+.cabecera-semana {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.navegacion {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.navegacion .btn-icono {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.titulo {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.titulo h1 {
+  font-size: 1.25rem;
+}
+
+.herramientas {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.herramientas .btn:first-child {
+  flex: 1;
+}
+
+.btn.activo {
+  background: var(--acento-suave);
+  border-color: var(--acento-borde);
+  color: var(--acento);
+}
+
+.enlace {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--acento);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.centrado {
+  text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   Opciones del generador
+   -------------------------------------------------------------------------- */
+
+.opciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.deslizador {
+  width: 100%;
+  accent-color: var(--acento);
+  height: 1.5rem;
+}
+
+.acciones-panel {
+  flex-wrap: wrap;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--borde);
+  margin-top: 0.25rem;
+}
+
+/* --------------------------------------------------------------------------
+   Rejilla de días
+   -------------------------------------------------------------------------- */
+
+.rejilla {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.dia {
+  overflow: hidden;
+}
+
+.dia.pasado {
+  opacity: 0.6;
+}
+
+.dia.hoy {
+  border-color: var(--acento);
+  box-shadow: 0 0 0 1px var(--acento);
+}
+
+.dia-cabecera {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  background: var(--superficie-2);
+  border-bottom: 1px solid var(--borde);
+}
+
+.dia.finde .dia-cabecera {
+  background: var(--acento-suave);
+}
+
+.dia-nombre {
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: capitalize;
+}
+
+.dia-numero {
+  color: var(--texto-tenue);
+  font-size: 0.85rem;
+}
+
+.hoy-etiqueta {
+  margin-left: auto;
+  background: var(--acento);
+  color: var(--acento-texto);
+}
+
+/* --------------------------------------------------------------------------
+   Huecos
+   -------------------------------------------------------------------------- */
+
+.hueco {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.6rem 0.9rem;
+  border: 0;
+  border-top: 1px solid var(--borde);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.12s;
+}
+
+.hueco:first-of-type {
+  border-top: 0;
+}
+
+.hueco:hover {
+  background: var(--superficie-2);
+}
+
+.hueco-momento {
+  flex-shrink: 0;
+  width: 3.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.hueco-plato {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  font-size: 0.95rem;
+}
+
+.hueco-plato.nota {
+  color: var(--texto-suave);
+  font-style: italic;
+}
+
+.hueco-vacio {
+  color: var(--texto-tenue);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.punto {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.punto.sin-categoria {
+  background: var(--borde-fuerte);
+}
+
+.estrella {
+  color: #f59e0b;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+@media (width >= 48rem) {
+  .rejilla {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cabecera-semana {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .navegacion {
+    flex: 1;
+    max-width: 22rem;
+  }
+
+  .titulo {
+    text-align: left;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Selector de plato
+   -------------------------------------------------------------------------- */
+
+.velo {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgb(20 16 12 / 45%);
+  backdrop-filter: blur(2px);
+  animation: aparecer 0.15s ease-out;
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+  }
+}
+
+.hoja {
+  width: 100%;
+  max-width: 30rem;
+  max-height: 85dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--fondo);
+  border: 1px solid var(--borde);
+  border-bottom: 0;
+  border-radius: var(--radio-lg) var(--radio-lg) 0 0;
+  box-shadow: var(--sombra-alta);
+  padding-bottom: env(safe-area-inset-bottom);
+  animation: subir 0.2s ease-out;
+}
+
+@keyframes subir {
+  from {
+    transform: translateY(2rem);
+  }
+}
+
+.hoja-cabecera {
+  padding: 1rem 1rem 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--borde);
+}
+
+.hoja-cabecera h2 {
+  font-size: 1.05rem;
+}
+
+.hoja-cuerpo {
+  padding: 1rem 1.25rem 1.25rem;
+  overflow-y: auto;
+}
+
+.candidatos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-height: 45dvh;
+  overflow-y: auto;
+}
+
+.candidato {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: var(--radio-sm);
+  background: var(--superficie);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.12s;
+}
+
+.candidato:hover {
+  border-color: var(--acento);
+}
+
+.hoja-pie {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--borde);
+  flex-wrap: wrap;
+}
+
+@media (width >= 40rem) {
+  .velo {
+    align-items: center;
+    padding: 1.5rem;
+  }
+
+  .hoja {
+    border-radius: var(--radio-lg);
+    border-bottom: 1px solid var(--borde);
+  }
+}

@@ -1,0 +1,236 @@
+<div class="contenedor pila">
+  <header class="cabecera-semana">
+    <div class="navegacion">
+      <button type="button" class="btn-icono" (click)="mover(-1)" aria-label="Semana anterior">
+        ‹
+      </button>
+      <div class="titulo">
+        <h1>{{ titulo() }}</h1>
+        @if (!esSemanaActual()) {
+          <button type="button" class="enlace diminuto" (click)="irAHoy()">Volver a esta semana</button>
+        } @else {
+          <p class="diminuto tenue">Esta semana</p>
+        }
+      </div>
+      <button type="button" class="btn-icono" (click)="mover(1)" aria-label="Semana siguiente">
+        ›
+      </button>
+    </div>
+
+    <div class="herramientas">
+      <button
+        type="button"
+        class="btn btn-principal"
+        [disabled]="generando() || !platos.activos().length"
+        (click)="generarSemana()"
+      >
+        {{ generando() ? 'Generando…' : '✨ Generar semana' }}
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-sm"
+        [class.activo]="panelGenerador()"
+        (click)="panelGenerador.set(!panelGenerador())"
+        [attr.aria-expanded]="panelGenerador()"
+      >
+        Opciones
+      </button>
+    </div>
+  </header>
+
+  @if (panelGenerador()) {
+    <div class="panel opciones">
+      <div class="campo">
+        <label for="dias-sin-repetir">
+          No repetir un plato en <strong>{{ opciones().diasSinRepetir }}</strong> días
+        </label>
+        <input
+          id="dias-sin-repetir"
+          class="deslizador"
+          type="range"
+          min="0"
+          max="45"
+          step="1"
+          [ngModel]="opciones().diasSinRepetir"
+          (ngModelChange)="ajustarDias($event)"
+        />
+      </div>
+
+      <label class="casilla pequeno">
+        <input
+          type="checkbox"
+          [ngModel]="opciones().variarCategoria"
+          (ngModelChange)="ajustar('variarCategoria', $event)"
+        />
+        Variar la categoría entre comidas seguidas
+      </label>
+
+      <label class="casilla pequeno">
+        <input
+          type="checkbox"
+          [ngModel]="opciones().pesoFavorito > 1"
+          (ngModelChange)="ajustar('pesoFavorito', $event ? 2.5 : 1)"
+        />
+        Los favoritos salen más a menudo
+      </label>
+
+      <label class="casilla pequeno">
+        <input
+          type="checkbox"
+          [ngModel]="opciones().sobrescribir"
+          (ngModelChange)="ajustar('sobrescribir', $event)"
+        />
+        Rehacer también los huecos que ya están puestos
+      </label>
+
+      <div class="fila acciones-panel">
+        <button type="button" class="btn btn-sm" [disabled]="generando()" (click)="generarMes()">
+          Generar el mes de {{ f.nombreMes(inicio()) }}
+        </button>
+        <button type="button" class="btn btn-sm btn-peligro" [disabled]="generando()" (click)="vaciarSemana()">
+          Vaciar la semana
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (error()) {
+    <p class="aviso aviso-error" role="alert">{{ error() }}</p>
+  }
+
+  @for (aviso of avisos(); track aviso) {
+    <p class="aviso aviso-info pequeno">{{ aviso }}</p>
+  }
+
+  @if (!platos.cargando() && !platos.activos().length) {
+    <div class="vacio tarjeta-plana">
+      <span class="emoji" aria-hidden="true">🍽️</span>
+      <p><strong>Todavía no hay platos que repartir.</strong></p>
+      <p class="pequeno">Añade unos cuantos al catálogo y el generador podrá llenar la semana.</p>
+      <a class="btn btn-principal" routerLink="/platos">Ir a platos</a>
+    </div>
+  }
+
+  <div class="rejilla">
+    @for (dia of dias(); track dia) {
+      <section
+        class="tarjeta-plana dia"
+        [class.hoy]="f.esHoy(dia)"
+        [class.pasado]="f.esPasado(dia)"
+        [class.finde]="f.esFinDeSemana(dia)"
+      >
+        <header class="dia-cabecera">
+          <span class="dia-nombre">{{ f.nombreDia(dia) }}</span>
+          <span class="dia-numero">{{ f.numeroDia(dia) }}</span>
+          @if (f.esHoy(dia)) {
+            <span class="etiqueta hoy-etiqueta">hoy</span>
+          }
+        </header>
+
+        @for (momento of momentos; track momento) {
+          <button type="button" class="hueco" (click)="abrirHueco(dia, momento)">
+            <span class="hueco-momento diminuto tenue">{{ etiquetaMomento(momento) }}</span>
+
+            @if (platoDe(dia, momento); as plato) {
+              <span class="hueco-plato">
+                @if (categoriaDe(plato); as categoria) {
+                  <span
+                    class="punto"
+                    [style.background]="categoria.color"
+                    [attr.title]="categoria.nombre"
+                  ></span>
+                }
+                <span class="truncar">{{ plato.nombre }}</span>
+                @if (plato.favorito) {
+                  <span class="estrella" aria-hidden="true">★</span>
+                }
+              </span>
+            } @else if (entradaDe(dia, momento); as entrada) {
+              <span class="hueco-plato nota">{{ entrada.notas }}</span>
+            } @else {
+              <span class="hueco-vacio">Sin decidir</span>
+            }
+          </button>
+        }
+      </section>
+    }
+  </div>
+
+  @if (huecosVacios() > 0 && platos.activos().length) {
+    <p class="pequeno tenue centrado">
+      Quedan {{ huecosVacios() }} huecos por decidir esta semana.
+    </p>
+  }
+</div>
+
+@if (huecoActivo(); as hueco) {
+  <div class="velo" (click)="cerrarHueco()">
+    <div
+      class="hoja"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="titulo-hueco"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="fila-entre hoja-cabecera">
+        <div>
+          <h2 id="titulo-hueco">{{ etiquetaMomento(hueco.momento) }}</h2>
+          <p class="diminuto tenue">{{ f.formatearLargo(hueco.fecha) }}</p>
+        </div>
+        <button type="button" class="btn-icono" (click)="cerrarHueco()" aria-label="Cerrar">✕</button>
+      </header>
+
+      <div class="hoja-cuerpo pila-sm">
+        <input
+          class="entrada"
+          type="search"
+          placeholder="Buscar un plato…"
+          aria-label="Buscar un plato"
+          [ngModel]="busqueda()"
+          (ngModelChange)="busqueda.set($event)"
+        />
+
+        @if (!candidatos().length) {
+          <p class="vacio pequeno">
+            @if (busqueda()) {
+              Ningún plato coincide.
+            } @else {
+              No hay platos marcados como aptos para
+              {{ hueco.momento === 'comida' ? 'la comida' : 'la cena' }}.
+            }
+          </p>
+        } @else {
+          <ul class="candidatos">
+            @for (plato of candidatos(); track plato.id) {
+              <li>
+                <button type="button" class="candidato" (click)="elegir(plato)">
+                  @if (categoriaDe(plato); as categoria) {
+                    <span class="punto" [style.background]="categoria.color"></span>
+                  } @else {
+                    <span class="punto sin-categoria"></span>
+                  }
+                  <span class="crecer truncar">{{ plato.nombre }}</span>
+                  @if (plato.favorito) {
+                    <span class="estrella" aria-hidden="true">★</span>
+                  }
+                </button>
+              </li>
+            }
+          </ul>
+        }
+
+        <div class="fila hoja-pie">
+          <button type="button" class="btn btn-sm" (click)="anotarFuera()">Comemos fuera</button>
+          @if (entradaDe(hueco.fecha, hueco.momento)) {
+            <button type="button" class="btn btn-sm btn-peligro" (click)="vaciar()">Vaciar</button>
+          }
+        </div>
+
+        @if (error()) {
+          <p class="aviso aviso-error" role="alert">{{ error() }}</p>
+        }
+      </div>
+    </div>
+  </div>
+}

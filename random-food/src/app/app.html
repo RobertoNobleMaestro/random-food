@@ -1,1 +1,44 @@
-<h1>Random Food</h1>
+@if (arrancando()) {
+  <div class="cargando-barra"></div>
+}
+
+@if (mostrarNav()) {
+  <header class="cabecera">
+    <div class="contenedor cabecera-interior">
+      <a routerLink="/semana" class="marca">
+        <span class="marca-icono" aria-hidden="true">🍲</span>
+        <span class="marca-texto">
+          <strong>Random Food</strong>
+          <span class="diminuto tenue truncar">{{ hogares.hogar()?.nombre }}</span>
+        </span>
+      </a>
+
+      <nav class="nav-escritorio" aria-label="Secciones">
+        <a routerLink="/semana" routerLinkActive="activo">Semana</a>
+        <a routerLink="/platos" routerLinkActive="activo">Platos</a>
+        <a routerLink="/ajustes" routerLinkActive="activo">Ajustes</a>
+      </nav>
+    </div>
+  </header>
+}
+
+<main class="principal" [class.con-nav]="mostrarNav()">
+  <router-outlet />
+</main>
+
+@if (mostrarNav()) {
+  <nav class="nav-movil" aria-label="Secciones">
+    <a routerLink="/semana" routerLinkActive="activo">
+      <span aria-hidden="true">📅</span>
+      Semana
+    </a>
+    <a routerLink="/platos" routerLinkActive="activo">
+      <span aria-hidden="true">🍽️</span>
+      Platos
+    </a>
+    <a routerLink="/ajustes" routerLinkActive="activo">
+      <span aria-hidden="true">⚙️</span>
+      Ajustes
+    </a>
+  </nav>
+}

@@ -1,5 +1,4 @@
-import { computed, DestroyRef, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
 import type { Session, User } from '@supabase/supabase-js';
 import { SUPABASE } from './supabase.client';
 
@@ -12,7 +11,6 @@ import { SUPABASE } from './supabase.client';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly db = inject(SUPABASE);
-  private readonly enNavegador = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly destroyRef = inject(DestroyRef);
 
   private readonly _sesion = signal<Session | null>(null);
@@ -21,8 +19,8 @@ export class AuthService {
   readonly sesion = this._sesion.asReadonly();
 
   /**
-   * `true` hasta que se sabe si hay sesión. Sin esto, la interfaz parpadea
-   * mostrando la pantalla de login antes de recuperar la sesión guardada.
+   * `true` hasta que se sabe si hay sesión. Sin esto la interfaz parpadea
+   * mostrando el login antes de recuperar la sesión guardada.
    */
   readonly cargando = this._cargando.asReadonly();
 
@@ -30,12 +28,6 @@ export class AuthService {
   readonly autenticado = computed(() => this._sesion() !== null);
 
   constructor() {
-    // En servidor no hay sesión que recuperar ni a la que suscribirse.
-    if (!this.enNavegador) {
-      this._cargando.set(false);
-      return;
-    }
-
     void this.db.auth.getSession().then(({ data }) => {
       this._sesion.set(data.session);
       this._cargando.set(false);
@@ -50,12 +42,14 @@ export class AuthService {
   }
 
   /**
-   * Crea una cuenta. Según la configuración del proyecto puede requerir
-   * confirmar el correo antes de poder entrar.
+   * Crea una cuenta. Si el proyecto tiene la confirmación por correo activada,
+   * `necesitaConfirmacion` viene a `true` y no habrá sesión hasta que el
+   * usuario pinche el enlace.
    */
-  async registrar(email: string, password: string): Promise<void> {
-    const { error } = await this.db.auth.signUp({ email, password });
+  async registrar(email: string, password: string): Promise<{ necesitaConfirmacion: boolean }> {
+    const { data, error } = await this.db.auth.signUp({ email, password });
     if (error) throw error;
+    return { necesitaConfirmacion: data.session === null };
   }
 
   async entrar(email: string, password: string): Promise<void> {

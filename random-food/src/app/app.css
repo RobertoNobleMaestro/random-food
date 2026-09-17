@@ -1,0 +1,149 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+}
+
+/* --------------------------------------------------------------------------
+   Cabecera
+   -------------------------------------------------------------------------- */
+
+.cabecera {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--fondo) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--borde);
+  padding-top: env(safe-area-inset-top);
+}
+
+.cabecera-interior {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: var(--nav-alto);
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.marca-icono {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.marca-texto {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  min-width: 0;
+}
+
+.marca-texto strong {
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+
+/* --------------------------------------------------------------------------
+   Navegación de escritorio
+   -------------------------------------------------------------------------- */
+
+.nav-escritorio {
+  display: none;
+  gap: 0.25rem;
+}
+
+.nav-escritorio a {
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radio-sm);
+  color: var(--texto-suave);
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 550;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.nav-escritorio a:hover {
+  background: var(--superficie-2);
+  color: var(--texto);
+}
+
+.nav-escritorio a.activo {
+  background: var(--acento-suave);
+  color: var(--acento);
+}
+
+/* --------------------------------------------------------------------------
+   Navegación móvil
+   -------------------------------------------------------------------------- */
+
+.nav-movil {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: color-mix(in srgb, var(--superficie) 92%, transparent);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--borde);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-movil a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  padding: 0.55rem 0.25rem;
+  min-height: 3.5rem;
+  color: var(--texto-tenue);
+  text-decoration: none;
+  font-size: 0.7rem;
+  font-weight: 550;
+}
+
+.nav-movil a span {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.nav-movil a.activo {
+  color: var(--acento);
+}
+
+/* --------------------------------------------------------------------------
+   Contenido
+   -------------------------------------------------------------------------- */
+
+.principal {
+  padding-block: 1.25rem 2rem;
+}
+
+/* Hueco para que la barra inferior no tape el último elemento. */
+.principal.con-nav {
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+}
+
+@media (width >= 40rem) {
+  .nav-escritorio {
+    display: flex;
+  }
+
+  .nav-movil {
+    display: none;
+  }
+
+  .principal.con-nav {
+    padding-bottom: 3rem;
+  }
+}

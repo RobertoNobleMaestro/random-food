@@ -1,1 +1,511 @@
-/* You can add global styles to this file, and also import other style files */
+/* ==========================================================================
+   Random Food · estilos globales
+   Móvil primero. Sin fuentes externas: la PWA tiene que funcionar sin conexión.
+   ========================================================================== */
+
+:root {
+  color-scheme: light dark;
+
+  --fondo: #faf8f5;
+  --superficie: #ffffff;
+  --superficie-2: #f3efe9;
+  --borde: #e6ded3;
+  --borde-fuerte: #d3c7b8;
+
+  --texto: #2b2622;
+  --texto-suave: #7a716a;
+  --texto-tenue: #a89f96;
+
+  --acento: #c2410c;
+  --acento-texto: #ffffff;
+  --acento-suave: #fdf0e8;
+  --acento-borde: #f2c8ae;
+
+  --exito: #15803d;
+  --peligro: #b91c1c;
+  --peligro-suave: #fdeceb;
+
+  --radio: 0.75rem;
+  --radio-sm: 0.5rem;
+  --radio-lg: 1.25rem;
+
+  --sombra: 0 1px 2px rgb(43 38 34 / 6%), 0 4px 12px rgb(43 38 34 / 6%);
+  --sombra-alta: 0 4px 12px rgb(43 38 34 / 10%), 0 16px 32px rgb(43 38 34 / 10%);
+
+  --fuente:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+
+  --ancho: 60rem;
+  --nav-alto: 4rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema='claro']) {
+    --fondo: #191612;
+    --superficie: #231f1a;
+    --superficie-2: #2c2721;
+    --borde: #3a332b;
+    --borde-fuerte: #4d443a;
+
+    --texto: #f1ece5;
+    --texto-suave: #a79d93;
+    --texto-tenue: #7d746b;
+
+    --acento: #fb923c;
+    --acento-texto: #24170c;
+    --acento-suave: #32231a;
+    --acento-borde: #5c3d25;
+
+    --exito: #4ade80;
+    --peligro: #f87171;
+    --peligro-suave: #33201f;
+
+    --sombra: 0 1px 2px rgb(0 0 0 / 30%), 0 4px 12px rgb(0 0 0 / 25%);
+    --sombra-alta: 0 4px 12px rgb(0 0 0 / 35%), 0 16px 32px rgb(0 0 0 / 30%);
+  }
+}
+
+:root[data-tema='oscuro'] {
+  --fondo: #191612;
+  --superficie: #231f1a;
+  --superficie-2: #2c2721;
+  --borde: #3a332b;
+  --borde-fuerte: #4d443a;
+  --texto: #f1ece5;
+  --texto-suave: #a79d93;
+  --texto-tenue: #7d746b;
+  --acento: #fb923c;
+  --acento-texto: #24170c;
+  --acento-suave: #32231a;
+  --acento-borde: #5c3d25;
+  --exito: #4ade80;
+  --peligro: #f87171;
+  --peligro-suave: #33201f;
+  --sombra: 0 1px 2px rgb(0 0 0 / 30%), 0 4px 12px rgb(0 0 0 / 25%);
+  --sombra-alta: 0 4px 12px rgb(0 0 0 / 35%), 0 16px 32px rgb(0 0 0 / 30%);
+}
+
+/* --------------------------------------------------------------------------
+   Reinicio
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: var(--fuente);
+  font-size: 1rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  /* Respeta la zona segura del móvil (notch y barra inferior). */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  font-weight: 650;
+}
+
+h1 {
+  font-size: 1.6rem;
+}
+h2 {
+  font-size: 1.2rem;
+}
+h3 {
+  font-size: 1rem;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--acento);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   Disposición
+   -------------------------------------------------------------------------- */
+
+.contenedor {
+  width: 100%;
+  max-width: var(--ancho);
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+.pila {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pila-sm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fila {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.fila-entre {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.crecer {
+  flex: 1;
+  min-width: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Texto
+   -------------------------------------------------------------------------- */
+
+.suave {
+  color: var(--texto-suave);
+}
+
+.tenue {
+  color: var(--texto-tenue);
+}
+
+.pequeno {
+  font-size: 0.875rem;
+}
+
+.diminuto {
+  font-size: 0.78rem;
+}
+
+.truncar {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mono {
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+  letter-spacing: 0.06em;
+}
+
+/* --------------------------------------------------------------------------
+   Superficies
+   -------------------------------------------------------------------------- */
+
+.tarjeta {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+}
+
+.tarjeta-plana {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+}
+
+.panel {
+  background: var(--superficie-2);
+  border-radius: var(--radio);
+  padding: 1rem;
+}
+
+/* --------------------------------------------------------------------------
+   Botones
+   -------------------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.6rem 1rem;
+  min-height: 2.75rem; /* objetivo táctil cómodo */
+  border: 1px solid var(--borde-fuerte);
+  border-radius: var(--radio-sm);
+  background: var(--superficie);
+  color: var(--texto);
+  font-size: 0.95rem;
+  font-weight: 550;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    transform 0.06s;
+  user-select: none;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--superficie-2);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-principal {
+  background: var(--acento);
+  border-color: var(--acento);
+  color: var(--acento-texto);
+}
+
+.btn-principal:hover:not(:disabled) {
+  background: var(--acento);
+  filter: brightness(1.08);
+}
+
+.btn-fantasma {
+  background: transparent;
+  border-color: transparent;
+  color: var(--texto-suave);
+}
+
+.btn-fantasma:hover:not(:disabled) {
+  background: var(--superficie-2);
+  color: var(--texto);
+}
+
+.btn-peligro {
+  color: var(--peligro);
+  border-color: transparent;
+  background: transparent;
+}
+
+.btn-peligro:hover:not(:disabled) {
+  background: var(--peligro-suave);
+}
+
+.btn-bloque {
+  width: 100%;
+}
+
+.btn-sm {
+  padding: 0.35rem 0.7rem;
+  min-height: 2.25rem;
+  font-size: 0.85rem;
+}
+
+.btn-icono {
+  padding: 0.5rem;
+  min-height: 2.5rem;
+  min-width: 2.5rem;
+  border-color: transparent;
+  background: transparent;
+  color: var(--texto-suave);
+}
+
+.btn-icono:hover:not(:disabled) {
+  background: var(--superficie-2);
+  color: var(--texto);
+}
+
+/* --------------------------------------------------------------------------
+   Formularios
+   -------------------------------------------------------------------------- */
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.campo > label {
+  font-size: 0.85rem;
+  font-weight: 550;
+  color: var(--texto-suave);
+}
+
+.entrada,
+.select,
+.area {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  min-height: 2.75rem;
+  background: var(--superficie);
+  border: 1px solid var(--borde-fuerte);
+  border-radius: var(--radio-sm);
+  /* 16px evita que iOS haga zoom al enfocar. */
+  font-size: 1rem;
+  transition: border-color 0.15s;
+}
+
+.entrada:focus,
+.select:focus,
+.area:focus {
+  border-color: var(--acento);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--acento-suave);
+}
+
+.entrada::placeholder,
+.area::placeholder {
+  color: var(--texto-tenue);
+}
+
+.area {
+  min-height: 5rem;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.select {
+  appearance: none;
+  padding-right: 2.25rem;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    right 1rem center,
+    right 0.72rem center;
+  background-size:
+    0.3rem 0.3rem,
+    0.3rem 0.3rem;
+  background-repeat: no-repeat;
+}
+
+.casilla {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  user-select: none;
+  padding: 0.3rem 0;
+}
+
+.casilla input {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--acento);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* --------------------------------------------------------------------------
+   Avisos
+   -------------------------------------------------------------------------- */
+
+.aviso {
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radio-sm);
+  font-size: 0.9rem;
+  border: 1px solid transparent;
+}
+
+.aviso-error {
+  background: var(--peligro-suave);
+  border-color: color-mix(in srgb, var(--peligro) 30%, transparent);
+  color: var(--peligro);
+}
+
+.aviso-info {
+  background: var(--acento-suave);
+  border-color: var(--acento-borde);
+  color: var(--texto);
+}
+
+/* --------------------------------------------------------------------------
+   Etiquetas y estados
+   -------------------------------------------------------------------------- */
+
+.etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 550;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.vacio {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--texto-suave);
+}
+
+.vacio .emoji {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+/* Barra de carga fina en la parte superior. */
+.cargando-barra {
+  position: fixed;
+  inset: 0 0 auto;
+  height: 2px;
+  background: var(--acento);
+  animation: deslizar 1.1s ease-in-out infinite;
+  transform-origin: left;
+  z-index: 50;
+}
+
+@keyframes deslizar {
+  0% {
+    transform: scaleX(0);
+    opacity: 1;
+  }
+  50% {
+    transform: scaleX(0.7);
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

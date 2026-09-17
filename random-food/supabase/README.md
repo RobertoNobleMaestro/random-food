@@ -19,6 +19,8 @@ En el **SQL Editor**, pegar y ejecutar **en este orden**:
 
 El orden importa: la segunda da por hechas las tablas de la primera.
 
+Ambas se han ejecutado contra PostgreSQL 17 y pasan sin errores.
+
 ## 3. Copiar las credenciales
 
 En **Project Settings → API**, copiar:
@@ -34,17 +36,28 @@ entera.
 
 ## 4. Crear tu hogar
 
-Todo cuelga de un hogar, así que hace falta uno antes de poder guardar nada. Con un usuario ya
-registrado, desde la app:
+Todo cuelga de un hogar, así que hace falta uno antes de poder guardar nada. La app lo hace sola la
+primera vez que entras; por debajo es esto:
 
 ```ts
 const { data, error } = await db.rpc('crear_hogar', { _nombre: 'Casa' });
 ```
 
-Devuelve el hogar con su `codigo_invitacion`. Quien quiera entrar, lo canjea:
+Devuelve el hogar con su `codigo_invitacion` de 12 caracteres. Quien quiera entrar, lo canjea:
 
 ```ts
-const { data, error } = await db.rpc('unirse_a_hogar', { _codigo: 'A3F9C1' });
+const { data, error } = await db.rpc('unirse_a_hogar', { _codigo: 'A3F9C1B2D4E6' });
+```
+
+**Un código inválido devuelve `data: null` sin `error`**, y no es un descuido. La función lleva un
+contador de intentos, y lanzar una excepción revertiría la transacción entera — incluido el apunte
+del intento fallido. Con `raise`, el contador solo sobrevivía a los aciertos, o sea que el limitador
+no frenaba nada: quedó comprobado con 12 intentos seguidos sin un solo bloqueo.
+
+Si un código se filtra, se invalida generando otro:
+
+```ts
+const { data, error } = await db.rpc('rotar_codigo_invitacion', { _hogar_id: hogar.id });
 ```
 
 ---
@@ -55,7 +68,7 @@ Esto es lo que de verdad hay que verificar, porque todo lo demás se construye e
 
 ### Revisión rápida
 
-- **Table Editor** → las siete tablas con el escudo verde de *RLS enabled*.
+- **Table Editor** → las ocho tablas con el escudo verde de *RLS enabled*.
 - **Advisors → Security** → cero avisos de `RLS disabled` o `policy allows public access`.
 
 ### Prueba de aislamiento
@@ -65,10 +78,11 @@ Con dos usuarios de prueba (**Authentication → Add user**):
 | Paso | Resultado esperado |
 | --- | --- |
 | A llama a `crear_hogar` | Aparece el hogar **y sus diez categorías** |
-| A crea un plato | Correcto |
+| A crea un plato | `creado_por` se fija solo, aunque mandes otro id |
 | B consulta `platos` sin unirse | **0 filas** — no un error |
-| B llama a `unirse_a_hogar` con el código | Ahora ve el plato de A |
-| B lo intenta con un código inventado | Excepción *código no válido* |
+| B prueba 11 códigos inventados | Los diez primeros devuelven `null`; el once falla con *demasiados intentos* |
+| B canja el código bueno | Ahora ve el plato de A |
+| B intenta meter a A en su hogar | RLS lo rechaza: no hay política de INSERT en `miembros` |
 
 Si el tercer paso devolviera filas, hay una fuga de datos y no merece la pena seguir construyendo
 hasta arreglarla.
@@ -85,18 +99,53 @@ Intentar meter en `plan_comidas` de un hogar un `plato_id` de otro: la clave for
 **El historial no tiene tabla propia.** Es `plan_comidas` con fecha pasada. "Asignar desde el
 historial" es copiar una fila a otra fecha.
 
-**Los platos se archivan, no se borran.** `archivado = true`. Borrarlos de verdad se llevaría por
-delante el historial donde aparecen.
+**Los platos se archivan, no se borran.** `archivado = true`. Borrarlos de verdad arrastra en
+cascada sus apariciones en el calendario, o sea el historial; por eso la app solo archiva y no
+expone borrado definitivo. El nombre de un plato archivado **vuelve a quedar libre**: el índice
+único solo mira los activos.
 
 **Un plato por hueco, por ahora.** La restricción es `unique (hogar_id, fecha, momento, orden)` con
 `orden` fijo a 1. Admitir primer y segundo plato más adelante solo requiere cambiar la interfaz.
 
 **Las categorías son datos, no esquema.** Renombrarlas, reordenarlas o añadir nuevas es un `INSERT`
-desde la app, sin migraciones. Una categoría en uso no se puede borrar (`ON DELETE RESTRICT`): hay
-que mover los platos primero.
+desde la app, sin migraciones. Una categoría en uso no se puede borrar, pero la clave foránea usa
+`NO ACTION` y no `RESTRICT`: `RESTRICT` se comprueba fila a fila y hacía fallar el borrado de un
+hogar entero según el orden en que Postgres procesara la cascada.
+
+**Un hogar sin miembros se borra solo.** Si se va el último, o si borras su cuenta en
+Authentication, quedaría un hogar invisible para siempre ocupando sitio. Si quedan miembros pero
+ninguno es propietario, asciende al más antiguo.
 
 **Añadir un momento** (desayuno, merienda) sí es una línea de SQL:
 
 ```sql
 alter type public.momento_comida add value 'desayuno';
 ```
+
+---
+
+## Probarlo en local sin tocar Supabase
+
+Con Docker, las migraciones se ejecutan contra un Postgres desechable. Hace falta un remedo mínimo
+de lo que aporta Supabase (los roles, el esquema `auth` y `auth.uid()`), que **no** forma parte del
+proyecto:
+
+```sql
+create role anon nologin;
+create role authenticated nologin;
+create role service_role nologin;
+
+create schema auth;
+create table auth.users (id uuid primary key default gen_random_uuid(), email text unique);
+
+-- En Supabase esto lee el JWT; en local se simula con un ajuste de sesión.
+create function auth.uid() returns uuid language sql stable as $$
+  select nullif(current_setting('app.uid', true), '')::uuid;
+$$;
+
+grant usage on schema auth, public to anon, authenticated;
+grant execute on function auth.uid() to anon, authenticated;
+```
+
+Luego se cambia de usuario con `set session app.uid = '<uuid>'; set role authenticated;` y se puede
+comprobar RLS igual que en producción.

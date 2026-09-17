@@ -1,0 +1,319 @@
+<div class="contenedor pila">
+  <header class="fila-entre">
+    <div>
+      <h1>Platos</h1>
+      <p class="suave pequeno">
+        {{ platos.activos().length }}
+        {{ platos.activos().length === 1 ? 'plato' : 'platos' }} en el catálogo
+      </p>
+    </div>
+    <button type="button" class="btn btn-principal" (click)="abrirNuevo()">
+      <span aria-hidden="true">+</span> Añadir
+    </button>
+  </header>
+
+  <div class="filtros">
+    <input
+      class="entrada"
+      type="search"
+      placeholder="Buscar un plato…"
+      aria-label="Buscar un plato"
+      [ngModel]="busqueda()"
+      (ngModelChange)="busqueda.set($event)"
+    />
+
+    <select
+      class="select"
+      aria-label="Filtrar por categoría"
+      [ngModel]="filtroCategoria()"
+      (ngModelChange)="filtroCategoria.set($event)"
+    >
+      <option value="">Todas las categorías</option>
+      @for (categoria of hogares.categorias(); track categoria.id) {
+        <option [value]="categoria.id">{{ categoria.icono }} {{ categoria.nombre }}</option>
+      }
+    </select>
+
+    <div class="interruptores">
+      <label class="casilla pequeno">
+        <input
+          type="checkbox"
+          [ngModel]="soloFavoritos()"
+          (ngModelChange)="soloFavoritos.set($event)"
+        />
+        Solo favoritos
+      </label>
+
+      <label class="casilla pequeno">
+        <input
+          type="checkbox"
+          [ngModel]="verArchivados()"
+          (ngModelChange)="verArchivados.set($event)"
+        />
+        Archivados
+      </label>
+    </div>
+  </div>
+
+  @if (error() && !editando()) {
+    <p class="aviso aviso-error" role="alert">{{ error() }}</p>
+  }
+
+  @if (platos.cargando()) {
+    <p class="suave pequeno">Cargando…</p>
+  } @else if (!visibles().length) {
+    <div class="vacio tarjeta-plana">
+      @if (verArchivados()) {
+        <span class="emoji" aria-hidden="true">📦</span>
+        <p>No hay platos archivados.</p>
+      } @else if (hayFiltros()) {
+        <span class="emoji" aria-hidden="true">🔍</span>
+        <p>Ningún plato coincide con la búsqueda.</p>
+        <button type="button" class="btn btn-sm" (click)="limpiarFiltros()">Quitar filtros</button>
+      } @else {
+        <span class="emoji" aria-hidden="true">🍽️</span>
+        <p><strong>Tu catálogo está vacío.</strong></p>
+        <p class="pequeno">
+          Añade los platos que cocináis de verdad, con el enlace a su receta en Cookidoo. Con treinta
+          o cuarenta ya tienes variedad de sobra.
+        </p>
+        <button type="button" class="btn btn-principal" (click)="abrirNuevo()">
+          Añadir el primero
+        </button>
+      }
+    </div>
+  } @else {
+    <ul class="lista">
+      @for (plato of visibles(); track plato.id) {
+        <li class="tarjeta-plana plato" [class.archivado]="plato.archivado">
+          <button type="button" class="cuerpo" (click)="abrirEdicion(plato)">
+            <span class="linea-titulo">
+              <strong class="truncar">{{ plato.nombre }}</strong>
+              @if (categoriaDe(plato); as categoria) {
+                <span
+                  class="etiqueta"
+                  [style.background]="categoria.color + '22'"
+                  [style.color]="categoria.color"
+                >
+                  {{ categoria.icono }} {{ categoria.nombre }}
+                </span>
+              }
+            </span>
+
+            <span class="linea-meta diminuto tenue">
+              @if (!plato.apto_comida) {
+                <span>solo cenas</span>
+              } @else if (!plato.apto_cena) {
+                <span>solo comidas</span>
+              }
+              @if (plato.raciones_base) {
+                <span>{{ plato.raciones_base }} raciones</span>
+              }
+              @if (plato.url_cookidoo) {
+                <span>receta</span>
+              }
+              @if (plato.notas) {
+                <span class="truncar">{{ plato.notas }}</span>
+              }
+            </span>
+          </button>
+
+          <div class="acciones">
+            @if (plato.url_cookidoo) {
+              <a
+                class="btn-icono"
+                [href]="plato.url_cookidoo"
+                target="_blank"
+                rel="noopener"
+                [attr.aria-label]="'Abrir la receta de ' + plato.nombre"
+                title="Abrir la receta"
+              >
+                📖
+              </a>
+            }
+
+            @if (plato.archivado) {
+              <button type="button" class="btn btn-sm" (click)="restaurar(plato)">Restaurar</button>
+            } @else {
+              <button
+                type="button"
+                class="btn-icono favorito"
+                [class.marcado]="plato.favorito"
+                (click)="alternarFavorito(plato, $event)"
+                [attr.aria-pressed]="plato.favorito"
+                [attr.aria-label]="
+                  (plato.favorito ? 'Quitar de favoritos: ' : 'Marcar como favorito: ') + plato.nombre
+                "
+              >
+                {{ plato.favorito ? '★' : '☆' }}
+              </button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</div>
+
+@if (editando(); as destino) {
+  <div class="velo" (click)="cerrar()">
+    <div
+      class="hoja"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="titulo-plato"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="fila-entre hoja-cabecera">
+        <h2 id="titulo-plato">{{ destino === 'nuevo' ? 'Nuevo plato' : 'Editar plato' }}</h2>
+        <button type="button" class="btn-icono" (click)="cerrar()" aria-label="Cerrar">✕</button>
+      </header>
+
+      <form class="pila hoja-cuerpo" (ngSubmit)="guardar()">
+        <div class="campo">
+          <label for="nombre-plato">Nombre</label>
+          <input
+            id="nombre-plato"
+            name="nombre"
+            class="entrada"
+            type="text"
+            placeholder="Lentejas con chorizo"
+            maxlength="120"
+            required
+            [ngModel]="formulario().nombre"
+            (ngModelChange)="actualizar('nombre', $event)"
+          />
+        </div>
+
+        <div class="campo">
+          <label for="categoria-plato">Categoría</label>
+          <select
+            id="categoria-plato"
+            name="categoria"
+            class="select"
+            [ngModel]="formulario().categoria_id"
+            (ngModelChange)="actualizar('categoria_id', $event)"
+          >
+            <option [ngValue]="null">Sin categoría</option>
+            @for (categoria of hogares.categorias(); track categoria.id) {
+              <option [ngValue]="categoria.id">{{ categoria.icono }} {{ categoria.nombre }}</option>
+            }
+          </select>
+          <p class="diminuto tenue">El generador la usa para no repetir lo mismo dos días.</p>
+        </div>
+
+        <div class="campo">
+          <label for="url-plato">Enlace a la receta</label>
+          <input
+            id="url-plato"
+            name="url"
+            class="entrada"
+            type="url"
+            inputmode="url"
+            placeholder="https://cookidoo.es/recipes/…"
+            [ngModel]="formulario().url_cookidoo"
+            (ngModelChange)="actualizarTexto('url_cookidoo', $event ?? '')"
+          />
+          <p class="diminuto tenue">
+            Pega el enlace de Cookidoo. Al tocarlo se abre la receta con tu cuenta.
+          </p>
+        </div>
+
+        <div class="dos-columnas">
+          <div class="campo">
+            <label for="raciones-plato">Raciones</label>
+            <input
+              id="raciones-plato"
+              name="raciones"
+              class="entrada"
+              type="number"
+              inputmode="numeric"
+              min="1"
+              max="32"
+              placeholder="4"
+              [ngModel]="formulario().raciones_base"
+              (ngModelChange)="actualizarRaciones($event ?? '')"
+            />
+          </div>
+
+          <fieldset class="campo sin-borde">
+            <legend>Cuándo vale</legend>
+            <label class="casilla">
+              <input
+                type="checkbox"
+                name="comida"
+                [ngModel]="formulario().apto_comida"
+                (ngModelChange)="actualizar('apto_comida', $event)"
+              />
+              Comida
+            </label>
+            <label class="casilla">
+              <input
+                type="checkbox"
+                name="cena"
+                [ngModel]="formulario().apto_cena"
+                (ngModelChange)="actualizar('apto_cena', $event)"
+              />
+              Cena
+            </label>
+          </fieldset>
+        </div>
+
+        @if (!momentoValido()) {
+          <p class="diminuto aviso aviso-error">
+            Marca al menos uno: un plato que no vale ni para comer ni para cenar nunca saldría.
+          </p>
+        }
+
+        <label class="casilla">
+          <input
+            type="checkbox"
+            name="favorito"
+            [ngModel]="formulario().favorito"
+            (ngModelChange)="actualizar('favorito', $event)"
+          />
+          Favorito · sale más a menudo al generar
+        </label>
+
+        <div class="campo">
+          <label for="notas-plato">Notas</label>
+          <textarea
+            id="notas-plato"
+            name="notas"
+            class="area"
+            placeholder="Le va bien menos sal. Congela bien."
+            [ngModel]="formulario().notas"
+            (ngModelChange)="actualizarTexto('notas', $event ?? '')"
+          ></textarea>
+        </div>
+
+        @if (error()) {
+          <p class="aviso aviso-error" role="alert">{{ error() }}</p>
+        }
+
+        <div class="hoja-pie">
+          @if (destino !== 'nuevo' && !destino.archivado) {
+            <button type="button" class="btn btn-peligro" (click)="archivar(destino)">
+              Archivar
+            </button>
+          }
+          <span class="crecer"></span>
+          <button type="button" class="btn" (click)="cerrar()">Cancelar</button>
+          <button
+            type="submit"
+            class="btn btn-principal"
+            [disabled]="!nombreValido() || !momentoValido() || guardando()"
+          >
+            {{ guardando() ? 'Guardando…' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+
+      @if (destino !== 'nuevo' && !destino.archivado) {
+        <p class="diminuto tenue nota-archivar">
+          Archivar lo quita del catálogo pero conserva el historial donde aparece.
+        </p>
+      }
+    </div>
+  </div>
+}

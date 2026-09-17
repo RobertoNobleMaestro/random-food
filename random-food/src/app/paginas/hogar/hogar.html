@@ -1,0 +1,90 @@
+<div class="contenedor estrecho">
+  <div class="pila">
+    <header class="encabezado">
+      <h1>Tu hogar</h1>
+      <p class="suave pequeno">
+        Todo lo que guardes —platos, calendario, lista de la compra— vive dentro de un hogar. Podéis
+        entrar varias personas y compartir el mismo plan.
+      </p>
+    </header>
+
+    @if (hogares.hogares().length) {
+      <section class="tarjeta seccion">
+        <h2>Abrir uno que ya tienes</h2>
+        <ul class="lista-hogares">
+          @for (hogar of hogares.hogares(); track hogar.id) {
+            <li>
+              <button type="button" class="fila-hogar" (click)="abrir(hogar.id)">
+                <span class="crecer truncar">{{ hogar.nombre }}</span>
+                <span class="tenue" aria-hidden="true">→</span>
+              </button>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    <section class="tarjeta seccion">
+      <h2>Crear un hogar</h2>
+      <p class="suave pequeno">Empiezas de cero, con unas categorías de partida.</p>
+
+      <form class="pila-sm" (ngSubmit)="crear()">
+        <div class="campo">
+          <label for="nombre">Cómo se llama</label>
+          <input
+            id="nombre"
+            name="nombre"
+            class="entrada"
+            type="text"
+            placeholder="Casa"
+            maxlength="80"
+            [ngModel]="nombre()"
+            (ngModelChange)="nombre.set($event)"
+          />
+        </div>
+
+        <button type="submit" class="btn btn-principal" [disabled]="!nombreValido() || ocupado()">
+          {{ creando() ? 'Creando…' : 'Crear hogar' }}
+        </button>
+      </form>
+    </section>
+
+    <section class="tarjeta seccion">
+      <h2>Unirte a uno</h2>
+      <p class="suave pequeno">
+        Pide el código a quien ya esté dentro. Lo encuentra en Ajustes.
+      </p>
+
+      <form class="pila-sm" (ngSubmit)="unirse()">
+        <div class="campo">
+          <label for="codigo">Código de invitación</label>
+          <input
+            id="codigo"
+            name="codigo"
+            class="entrada mono codigo"
+            type="text"
+            placeholder="A3F9C1"
+            maxlength="12"
+            autocapitalize="characters"
+            spellcheck="false"
+            [ngModel]="codigo()"
+            (ngModelChange)="codigo.set($event)"
+          />
+        </div>
+
+        <button type="submit" class="btn" [disabled]="!codigoValido() || ocupado()">
+          {{ uniendo() ? 'Entrando…' : 'Unirme' }}
+        </button>
+      </form>
+    </section>
+
+    @if (error()) {
+      <p class="aviso aviso-error" role="alert">{{ error() }}</p>
+    }
+
+    <p class="pequeno tenue pie">
+      Has entrado como {{ correo() }}.
+      <button type="button" class="enlace" (click)="salir()">Cerrar sesión</button>
+    </p>
+  </div>
+</div>

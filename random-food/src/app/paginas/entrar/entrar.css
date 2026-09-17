@@ -1,0 +1,52 @@
+.envoltorio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 1.5rem 1rem;
+}
+
+.panel-entrada {
+  width: 100%;
+  max-width: 24rem;
+  padding: 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.encabezado {
+  text-align: center;
+}
+
+.encabezado .icono {
+  font-size: 2.5rem;
+  line-height: 1;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.encabezado h1 {
+  font-size: 1.4rem;
+}
+
+.encabezado p {
+  margin-top: 0.25rem;
+}
+
+.cambio {
+  text-align: center;
+  margin: 0;
+}
+
+.enlace {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--acento);
+  font-weight: 600;
+  font-size: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
