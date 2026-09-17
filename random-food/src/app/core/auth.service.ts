@@ -28,10 +28,14 @@ export class AuthService {
   readonly autenticado = computed(() => this._sesion() !== null);
 
   constructor() {
-    void this.db.auth.getSession().then(({ data }) => {
-      this._sesion.set(data.session);
-      this._cargando.set(false);
-    });
+    // El `catch` no es decorativo: si esto se queda a medias, `cargando` no se
+    // apaga nunca y la aplicación se queda colgada en la barra de carga, sin
+    // llegar siquiera a enseñar el formulario de entrada.
+    void this.db.auth
+      .getSession()
+      .then(({ data }) => this._sesion.set(data.session))
+      .catch(() => this._sesion.set(null))
+      .finally(() => this._cargando.set(false));
 
     const { data } = this.db.auth.onAuthStateChange((_evento, sesion) => {
       this._sesion.set(sesion);
